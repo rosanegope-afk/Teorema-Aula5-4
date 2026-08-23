@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demonstração Interativa — Teorema A5–4</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap');
+
+:root{
+  --navy:#17304f;
+  --navy-ink:#0d1e33;
+  --blue:#3f74a6;
+  --blue-soft:rgba(63,116,166,.14);
+  --gold:#b8862d;
+  --gold-soft:rgba(184,134,45,.16);
+  --green:#2f8f5b;
+  --green-soft:#e6f3ec;
+  --red:#c0392b;
+  --red-soft:#fbe9e7;
+  --paper:#eef1f6;
+  --card:#ffffff;
+  --muted:#5b6b7c;
+  --line:#dde3ec;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgba(63,116,166,.10), transparent 60%),
+    var(--paper);
+  color:var(--navy-ink);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  padding:32px 20px 80px;
+}
+.wrap{max-width:1180px;margin:0 auto;}
+
+header.top{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:28px;
+  border-bottom:2px solid var(--navy);
+  padding-bottom:18px;
+}
+.eyebrow{
+  font-family:'Inter',sans-serif;
+  font-size:12.5px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--blue);
+  font-weight:600;
+  margin-bottom:6px;
+}
+h1{
+  font-family:'Fraunces',serif;
+  font-weight:600;
+  font-size:clamp(28px,4vw,42px);
+  margin:0;
+  color:var(--navy);
+  line-height:1.05;
+}
+h1 em{font-style:italic;color:var(--gold);}
+.subtitle{color:var(--muted);font-size:14.5px;max-width:520px;margin-top:8px;}
+.badge{
+  font-family:'Fraunces',serif;
+  font-size:13px;
+  color:var(--navy);
+  border:1px solid var(--navy);
+  border-radius:100px;
+  padding:6px 14px;
+  white-space:nowrap;
+}
+
+/* Progress */
+.progress{
+  display:flex;
+  gap:8px;
+  margin-bottom:28px;
+}
+.pstep{
+  flex:1;
+  height:6px;
+  border-radius:4px;
+  background:var(--line);
+  position:relative;
+  overflow:hidden;
+}
+.pstep i{
+  display:block;height:100%;width:0%;
+  background:linear-gradient(90deg,var(--blue),var(--gold));
+  transition:width .5s ease;
+}
+.plabels{display:flex;gap:8px;margin-top:6px;margin-bottom:24px;}
+.plabels span{flex:1;font-size:11.5px;color:var(--muted);text-align:center;}
+.plabels span.active{color:var(--navy);font-weight:700;}
+
+/* Layout */
+.stage{
+  display:grid;
+  grid-template-columns:1.05fr 1fr;
+  gap:22px;
+  align-items:stretch;
+}
+@media (max-width:880px){.stage{grid-template-columns:1fr;}}
+
+.panel{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:0 1px 2px rgba(23,48,79,.04), 0 10px 30px -18px rgba(23,48,79,.25);
+}
+
+.diagram-panel{padding:20px 20px 16px;display:flex;flex-direction:column;}
+.diagram-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  margin-bottom:6px;
+}
+.diagram-head .num{
+  font-family:'Fraunces',serif;font-weight:700;color:var(--gold);font-size:13px;
+  letter-spacing:.06em;text-transform:uppercase;
+}
+.diagram-head .slideref{font-size:12px;color:var(--muted);}
+.svgbox{
+  background:
+    linear-gradient(180deg, #fbfcfe, #f4f7fb);
+  border:1px solid var(--line);
+  border-radius:12px;
+  flex:1;
+  display:flex;align-items:center;justify-content:center;
+  padding:8px;
+  min-height:340px;
+}
+.svgbox svg{width:100%;height:auto;max-height:380px;}
+.legend{
+  display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;font-size:12px;color:var(--muted);
+}
+.legend span{display:inline-flex;align-items:center;gap:6px;}
+.legend i{width:16px;height:3px;border-radius:2px;display:inline-block;}
+
+.new-el{animation:pulseIn .7s ease;}
+@keyframes pulseIn{
+  0%{opacity:0;transform:scale(.7);}
+  60%{opacity:1;transform:scale(1.12);}
+  100%{opacity:1;transform:scale(1);}
+}
+
+.qa-panel{padding:24px 26px;display:flex;flex-direction:column;}
+.step-title{
+  font-family:'Fraunces',serif;
+  font-weight:600;
+  font-size:20px;
+  color:var(--navy);
+  margin:0 0 8px;
+}
+.context{
+  font-size:14px;
+  line-height:1.55;
+  color:#2c3a4b;
+  background:var(--blue-soft);
+  border-left:3px solid var(--blue);
+  padding:10px 14px;
+  border-radius:0 8px 8px 0;
+  margin-bottom:18px;
+}
+.context b{color:var(--navy);}
+.question{
+  font-size:15.5px;
+  font-weight:600;
+  color:var(--navy-ink);
+  margin-bottom:14px;
+  line-height:1.4;
+}
+.options{display:flex;flex-direction:column;gap:10px;margin-bottom:8px;}
+.opt{
+  text-align:left;
+  border:1.5px solid var(--line);
+  background:#fff;
+  border-radius:10px;
+  padding:11px 14px;
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  color:var(--navy-ink);
+  cursor:pointer;
+  transition:border-color .15s, background .15s, transform .1s;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.opt .k{
+  flex:0 0 auto;
+  width:22px;height:22px;border-radius:50%;
+  border:1.5px solid var(--muted);
+  font-size:11.5px;font-weight:700;color:var(--muted);
+  display:flex;align-items:center;justify-content:center;
+  margin-top:1px;
+}
+.opt:hover:not(:disabled){border-color:var(--blue);background:#f7fafd;}
+.opt:active:not(:disabled){transform:scale(.99);}
+.opt:disabled{cursor:default;}
+.opt.correct{border-color:var(--green);background:var(--green-soft);}
+.opt.correct .k{background:var(--green);border-color:var(--green);color:#fff;}
+.opt.wrong{border-color:var(--red);background:var(--red-soft);}
+.opt.wrong .k{background:var(--red);border-color:var(--red);color:#fff;}
+.opt.dim{opacity:.5;}
+
+.feedback{
+  font-size:13.5px;
+  border-radius:10px;
+  padding:12px 14px;
+  margin-top:6px;
+  display:none;
+  line-height:1.5;
+}
+.feedback.show{display:block;}
+.feedback.ok{background:var(--green-soft);color:#1e5c3d;border:1px solid #bfe3cf;}
+.feedback.no{background:var(--red-soft);color:#7a2318;border:1px solid #f0c3bc;}
+.feedback b{display:block;font-family:'Fraunces',serif;font-size:13.5px;margin-bottom:4px;}
+
+.explain{
+  display:none;
+  margin-top:14px;
+  background:var(--gold-soft);
+  border:1px solid #e3caa0;
+  border-radius:10px;
+  padding:14px 16px;
+  font-size:13.5px;
+  line-height:1.6;
+  color:#4a3510;
+}
+.explain.show{display:block;animation:pulseIn .5s ease;}
+.explain b{color:var(--navy);}
+.explain .why{font-family:'Fraunces',serif;font-weight:700;color:var(--gold);font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px;}
+
+.actions{margin-top:auto;padding-top:18px;display:flex;justify-content:flex-end;gap:10px;}
+.btn{
+  font-family:'Inter',sans-serif;
+  font-weight:600;
+  font-size:14px;
+  border:none;
+  border-radius:100px;
+  padding:11px 22px;
+  cursor:pointer;
+  transition:transform .1s, opacity .15s;
+}
+.btn:active{transform:scale(.97);}
+.btn.primary{background:var(--navy);color:#fff;}
+.btn.primary:disabled{background:#c8d2dd;cursor:not-allowed;}
+.btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line);}
+
+/* Final screen */
+.final{
+  display:none;
+  text-align:center;
+  padding:48px 24px;
+}
+.final.show{display:block;}
+.final .check{
+  width:64px;height:64px;border-radius:50%;
+  background:var(--green);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 18px;font-size:30px;
+}
+.final h2{font-family:'Fraunces',serif;color:var(--navy);font-size:28px;margin:0 0 10px;}
+.final p{color:var(--muted);font-size:14.5px;max-width:520px;margin:0 auto 22px;}
+.theorembox{
+  max-width:640px;margin:0 auto 24px;
+  background:var(--card);border:1.5px solid var(--navy);
+  border-radius:14px;padding:22px 26px;text-align:left;
+}
+.theorembox .tt{font-family:'Fraunces',serif;font-weight:700;color:var(--gold);font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.theorembox p{color:var(--navy-ink);font-size:14.5px;line-height:1.6;margin:0 0 10px;}
+.theorembox p:last-child{margin-bottom:0;}
+
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:36px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <div class="eyebrow">Geometria Espacial · Aula 5 · Paralelismo entre Planos</div>
+      <h1>Demonstração do <em>Teorema A5–4</em></h1>
+      <div class="subtitle">Prove cada etapa da demonstração respondendo à pergunta correspondente. A figura só avança quando o passo lógico é validado.</div>
+    </div>
+    <div class="badge">Rosane Gomes Pereira</div>
+  </header>
+
+  <div class="progress" id="progressBar">
+    <div class="pstep"><i id="pb0"></i></div>
+    <div class="pstep"><i id="pb1"></i></div>
+    <div class="pstep"><i id="pb2"></i></div>
+    <div class="pstep"><i id="pb3"></i></div>
+  </div>
+  <div class="plabels" id="plabels">
+    <span data-i="0">1ª afirmação · hipótese</span>
+    <span data-i="1">1ª afirmação · contradição</span>
+    <span data-i="2">2ª afirmação · construção</span>
+    <span data-i="3">2ª afirmação · conclusão</span>
+  </div>
+
+  <div class="stage" id="stage">
+    <section class="panel diagram-panel">
+      <div class="diagram-head">
+        <span class="num" id="diagNum">Etapa 1</span>
+        <span class="slideref" id="diagSlide">slide 17</span>
+      </div>
+      <div class="svgbox" id="svgHost"></div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <section class="panel qa-panel">
+      <h3 class="step-title" id="stepTitle"></h3>
+      <div class="context" id="context"></div>
+      <div class="question" id="question"></div>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="explain" id="explain"></div>
+      <div class="actions">
+        <button class="btn ghost" id="retryBtn" style="display:none;">Tentar de novo</button>
+        <button class="btn primary" id="nextBtn" disabled>Avançar →</button>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel final" id="finalPanel">
+    <div class="check">✓</div>
+    <h2>Teorema A5–4 demonstrado</h2>
+    <p>Você reconstruiu, passo a passo, as duas afirmações do teorema — usando os Teoremas A5–2 e A5–3 como ferramentas e a redução ao absurdo como estratégia.</p>
+    <div class="theorembox">
+      <div class="tt">Enunciado completo</div>
+      <p><b>1ª afirmação —</b> Se uma reta corta um plano, corta também qualquer plano paralelo a este.</p>
+      <p><b>2ª afirmação —</b> Se um plano corta uma reta, corta também qualquer reta paralela a ela.</p>
+    </div>
+    <button class="btn primary" id="restartBtn">Refazer a demonstração</button>
+  </section>
+
+  <footer>Aula 5 · Geometria Espacial — atividade interativa baseada na demonstração dos slides 17–20.</footer>
+</div>
+
+<script>
+/* ---------- Reusable SVG primitives (shared coordinate system) ---------- */
+const PLANE_ALPHA = `<polygon points="60,150 370,90 470,150 160,210" fill="rgba(23,48,79,.09)" stroke="#17304f" stroke-width="2"/>
+  <text x="432" y="128" font-family="Fraunces,serif" font-style="italic" font-size="22" fill="#17304f">α</text>`;
+
+const PLANE_BETA = `<polygon points="60,330 370,270 470,330 160,390" fill="rgba(63,116,166,.14)" stroke="#3f74a6" stroke-width="2"/>
+  <text x="432" y="308" font-family="Fraunces,serif" font-style="italic" font-size="22" fill="#3f74a6">β</text>`;
+
+function pt(x,y,label,color,dy=-10,dx=8){
+  return `<circle cx="${x}" cy="${y}" r="5.5" fill="${color}" stroke="#fff" stroke-width="1.5"/>
+  <text x="${x+dx}" y="${y+dy}" font-family="Fraunces,serif" font-style="italic" font-size="18" fill="${color}">${label}</text>`;
+}
+
+/* ---- Diagrams for Part 1 (slides 17-18) ---- */
+const R_LINE = `<line x1="250" y1="30" x2="250" y2="255" stroke="#17304f" stroke-width="2.5"/>
+  <line x1="250" y1="255" x2="250" y2="410" stroke="#17304f" stroke-width="2.5" stroke-dasharray="6 5"/>
+  <text x="258" y="45" font-family="Fraunces,serif" font-style="italic" font-size="18" fill="#17304f">r</text>`;
+
+const S_LINE = `<line x1="98" y1="180" x2="425" y2="120" stroke="#7d4f9e" stroke-width="2.5" class="new-el"/>
+  <text x="410" y="112" font-family="Fraunces,serif" font-style="italic" font-size="18" fill="#7d4f9e">s</text>`;
+
+const A_POINT = pt(250,150,'A','#b8862d');
+
+const svgBase1 = (extra) => `<svg viewBox="0 0 640 440" xmlns="http://www.w3.org/2000/svg">
+  ${PLANE_ALPHA}
+  ${PLANE_BETA}
+  ${R_LINE}
+  ${extra||''}
+  ${A_POINT}
+</svg>`;
+
+const svgStep1_before = svgBase1('');
+const svgStep1_after  = svgBase1(''); // hypothesis has no new geometry, only reasoning
+
+const svgStep2_before = svgBase1('');
+const svgStep2_after  = svgBase1(S_LINE);
+
+/* ---- Diagrams for Part 2 (slides 19-20) ---- */
+const PLANE_ALPHA_2 = PLANE_ALPHA;
+const R2_LINE = `<line x1="250" y1="20" x2="250" y2="255" stroke="#17304f" stroke-width="2.5"/>
+  <text x="230" y="34" font-family="Fraunces,serif" font-style="italic" font-size="18" fill="#17304f">r</text>`;
+const RP_LINE = `<line x1="400" y1="20" x2="400" y2="420" stroke="#7d4f9e" stroke-width="2.5" class="new-el"/>
+  <text x="408" y="34" font-family="Fraunces,serif" font-style="italic" font-size="18" fill="#7d4f9e">r′</text>`;
+const GAMMA_PLANE = `<polygon points="250,20 400,20 400,420 250,420" fill="rgba(184,134,45,.12)" stroke="#b8862d" stroke-width="2" stroke-dasharray="7 5" class="new-el"/>
+  <text x="300" y="55" font-family="Fraunces,serif" font-style="italic" font-size="20" fill="#b8862d">γ</text>`;
+const S2_LINE = `<line x1="250" y1="150" x2="400" y2="150" stroke="#2f8f5b" stroke-width="3" class="new-el"/>
+  <text x="315" y="142" font-family="Fraunces,serif" font-style="italic" font-size="18" fill="#2f8f5b">s</text>`;
+const A2_POINT = pt(250,150,'A','#b8862d',-10,-24);
+const B_POINT  = pt(400,150,'B','#c0392b',-10,10);
+
+const svgBase2 = (extra) => `<svg viewBox="0 0 640 440" xmlns="http://www.w3.org/2000/svg">
+  ${PLANE_ALPHA_2}
+  ${R2_LINE}
+  ${extra||''}
+  ${A2_POINT}
+</svg>`;
+
+const svgStep3_before = svgBase2('');
+const svgStep3_after  = svgBase2(`${RP_LINE}${GAMMA_PLANE}${S2_LINE}`);
+
+const svgStep4_before = svgBase2(`${RP_LINE}${GAMMA_PLANE}${S2_LINE}`);
+const svgStep4_after  = svgBase2(`${RP_LINE}${GAMMA_PLANE}${S2_LINE}${B_POINT}
+  <circle cx="400" cy="150" r="11" fill="none" stroke="#c0392b" stroke-width="2" class="new-el"/>`);
+
+/* ---------- Step data ---------- */
+const STEPS = [
+{
+  slide:'slide 17',
+  title:'Suposição por contradição',
+  context:'Sejam <b>α</b> e <b>β</b> planos paralelos e <b>r</b> uma reta secante a α, com <b>A</b> o ponto de interseção de r com α. Como A∈α e α∩β=∅, a reta r não está contida em β. Vamos supor, por absurdo, que r <i>não</i> intersecta β.',
+  question:'Como r ⊄ β e, por suposição, r ∩ β = ∅, o que a definição de posições relativas entre reta e plano nos obriga a concluir?',
+  legend:[['#17304f','α (plano)'],['#3f74a6','β (plano paralelo a α)'],['#17304f','r (reta secante a α)']],
+  options:[
+    {t:'r ∥ β', ok:true},
+    {t:'r ⊂ β', ok:false},
+    {t:'r é secante a β', ok:false},
+    {t:'r e β são coincidentes (sem sentido para reta e plano)', ok:false},
+  ],
+  feedbackOk:'Exatamente essa é a suposição que usaremos para chegar a uma contradição.',
+  feedbackNo:'Rever as três posições possíveis entre reta e plano: conter, ser secante, ou ser paralelo.',
+  explain:'Como r não tem ponto comum com β e r não está contida em β, a única posição relativa restante é <b>r ∥ β</b>. É essa suposição — falsa, como veremos — que será refutada nos próximos passos.',
+  before:svgStep1_before, after:svgStep1_after
+},
+{
+  slide:'slide 18',
+  title:'Construção do plano γ e a contradição',
+  context:'Seja <b>s ⊂ α</b> uma reta passando por A. Como α ∥ β, temos s ∥ β. As retas r e s são concorrentes em A e determinam um plano <b>γ</b>. Assim, r e s são duas retas concorrentes, ambas paralelas a β.',
+  question:'Pelo <b>Teorema A5–2</b> (duas retas concorrentes de um plano, paralelas a outro plano, garantem o paralelismo entre os planos), o que podemos concluir sobre γ?',
+  legend:[['#17304f','r (paralela a β, por hipótese)'],['#7d4f9e','s ⊂ α (paralela a β, pelo Teor. A5–1)'],['#b8862d','A (ponto de concorrência)']],
+  options:[
+    {t:'γ ∥ β', ok:true},
+    {t:'γ = β', ok:false},
+    {t:'γ ∩ β é uma única reta', ok:false},
+    {t:'γ ⊂ β', ok:false},
+  ],
+  feedbackOk:'Correto — e isso é o gatilho da contradição que vem a seguir.',
+  feedbackNo:'Releia o Teorema A5–2: ele exige duas retas concorrentes, ambas paralelas ao mesmo plano.',
+  explain:'Como r e s são concorrentes em A e ambas paralelas a β, o <b>Teorema A5–2</b> garante <b>γ ∥ β</b>. Mas γ e α também são dois planos paralelos a β passando pelo mesmo ponto A — logo, pela <b>unicidade</b> do Teorema A5–3, <b>γ = α</b>. Isso é absurdo: r ⊂ γ implicaria r ⊂ α, mas r é secante a α por hipótese. A suposição "r ∥ β" é falsa. Concluímos que <b>r ∩ β ≠ ∅</b>, provando a 1ª afirmação do teorema.',
+  before:svgStep2_before, after:svgStep2_after
+},
+{
+  slide:'slide 19',
+  title:'Segunda afirmação — construção do plano γ',
+  context:'Agora provamos: <i>se um plano corta uma reta, corta também qualquer reta paralela a ela</i>. Suponha que r corte α no ponto A, e seja <b>r′</b> uma reta paralela a r. As retas r e r′, por serem paralelas, determinam um plano <b>γ</b>. Como γ e α têm o ponto A em comum, eles são secantes e se intersectam segundo uma reta <b>s</b> que contém A.',
+  question:'No plano γ, temos r ∥ r′ e a reta s intersecta r no ponto A. Pela Geometria Plana, o que ocorre entre s e r′?',
+  legend:[['#17304f','r (corta α em A)'],['#7d4f9e','r′ (paralela a r)'],['#b8862d','γ (plano determinado por r e r′)']],
+  options:[
+    {t:'s também intersecta r′, em algum ponto B', ok:true},
+    {t:'s é paralela a r′', ok:false},
+    {t:'s não pode intersectar r′', ok:false},
+    {t:'s coincide com r′', ok:false},
+  ],
+  feedbackOk:'Sim — e esse ponto B é a chave da conclusão.',
+  feedbackNo:'Pense em duas retas paralelas no plano: se uma terceira reta corta uma delas, o que acontece com a outra?',
+  explain:'Pela Geometria Plana, <b>toda reta que intersecta uma de duas retas paralelas também intersecta a outra</b> (senão seria paralela a ambas, inclusive à que já corta). Como s intersecta r em A, s também intersecta r′ — digamos, em um ponto <b>B</b>.',
+  before:svgStep3_before, after:svgStep3_after
+},
+{
+  slide:'slide 20',
+  title:'Conclusão da segunda afirmação',
+  context:'Temos <b>s ⊂ α</b> (pois s = γ∩α) e <b>B ∈ s ∩ r′</b>.',
+  question:'O que podemos concluir sobre a reta r′ em relação ao plano α?',
+  legend:[['#17304f','α'],['#7d4f9e','r′'],['#c0392b','B (ponto comum a s e r′)']],
+  options:[
+    {t:'r′ é secante a α, pois B é ponto comum entre r′ e α', ok:true},
+    {t:'r′ é paralela a α', ok:false},
+    {t:'r′ está contida em α', ok:false},
+    {t:'nada pode ser concluído sobre r′ e α', ok:false},
+  ],
+  feedbackOk:'Isso fecha a demonstração da 2ª afirmação do teorema.',
+  feedbackNo:'Lembre-se: B está em s, e s está contida em α. Logo B também está em α.',
+  explain:'Como s ⊂ α e B ∈ s, temos B ∈ α. Mas B também pertence a r′. Logo <b>B ∈ r′ ∩ α</b>, ou seja, r′ e α têm um ponto em comum: <b>r′ é secante a α</b>. Isso demonstra a segunda afirmação: se um plano corta uma reta, corta também qualquer reta paralela a ela.',
+  before:svgStep4_before, after:svgStep4_after
+}
+];
+
+/* ---------- Engine ---------- */
+let current = 0;
+let answered = false;
+
+const svgHost = document.getElementById('svgHost');
+const legendEl = document.getElementById('legend');
+const stepTitle = document.getElementById('stepTitle');
+const contextEl = document.getElementById('context');
+const questionEl = document.getElementById('question');
+const optionsEl = document.getElementById('options');
+const feedbackEl = document.getElementById('feedback');
+const explainEl = document.getElementById('explain');
+const nextBtn = document.getElementById('nextBtn');
+const retryBtn = document.getElementById('retryBtn');
+const diagNum = document.getElementById('diagNum');
+const diagSlide = document.getElementById('diagSlide');
+const stage = document.getElementById('stage');
+const finalPanel = document.getElementById('finalPanel');
+
+function renderProgress(){
+  for(let i=0;i<4;i++){
+    const bar = document.getElementById('pb'+i);
+    bar.style.width = i < current ? '100%' : (i===current ? (answered?'100%':'20%') : '0%');
+  }
+  document.querySelectorAll('#plabels span').forEach((el,i)=>{
+    el.classList.toggle('active', i===current);
+  });
+}
+
+function renderStep(){
+  const s = STEPS[current];
+  answered = false;
+  diagNum.textContent = 'Etapa ' + (current+1);
+  diagSlide.textContent = s.slide;
+  svgHost.innerHTML = s.before;
+  legendEl.innerHTML = s.legend.map(([c,l])=>`<span><i style="background:${c}"></i>${l}</span>`).join('');
+  stepTitle.textContent = s.title;
+  contextEl.innerHTML = s.context;
+  questionEl.textContent = s.question;
+  optionsEl.innerHTML = '';
+  s.options.forEach((opt,idx)=>{
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.innerHTML = `<span class="k">${String.fromCharCode(65+idx)}</span><span>${opt.t}</span>`;
+    b.addEventListener('click', ()=>selectOption(idx));
+    optionsEl.appendChild(b);
+  });
+  feedbackEl.className = 'feedback';
+  feedbackEl.textContent = '';
+  explainEl.className = 'explain';
+  explainEl.innerHTML = '';
+  nextBtn.disabled = true;
+  nextBtn.textContent = current === STEPS.length-1 ? 'Concluir demonstração →' : 'Avançar →';
+  retryBtn.style.display = 'none';
+  renderProgress();
+}
+
+function selectOption(idx){
+  if(answered) return;
+  const s = STEPS[current];
+  const buttons = optionsEl.querySelectorAll('.opt');
+  const ok = s.options[idx].ok;
+
+  buttons.forEach((b,i)=>{
+    b.disabled = true;
+    if(i===idx){ b.classList.add(ok?'correct':'wrong'); }
+    else { b.classList.add('dim'); }
+  });
+
+  if(ok){
+    answered = true;
+    feedbackEl.className = 'feedback show ok';
+    feedbackEl.innerHTML = '<b>Correto.</b>' + s.feedbackOk;
+    explainEl.className = 'explain show';
+    explainEl.innerHTML = '<span class="why">Por que isso vale</span>' + s.explain;
+    svgHost.innerHTML = s.after;
+    nextBtn.disabled = false;
+    renderProgress();
+  } else {
+    feedbackEl.className = 'feedback show no';
+    feedbackEl.innerHTML = '<b>Ainda não.</b>' + s.feedbackNo;
+    retryBtn.style.display = 'inline-block';
+  }
+}
+
+retryBtn.addEventListener('click', ()=>{
+  const buttons = optionsEl.querySelectorAll('.opt');
+  buttons.forEach(b=>{
+    b.disabled=false;
+    b.classList.remove('correct','wrong','dim');
+  });
+  feedbackEl.className = 'feedback';
+  retryBtn.style.display = 'none';
+});
+
+nextBtn.addEventListener('click', ()=>{
+  if(current < STEPS.length-1){
+    current++;
+    renderStep();
+    stage.scrollIntoView({behavior:'smooth', block:'start'});
+  } else {
+    stage.style.display = 'none';
+    finalPanel.classList.add('show');
+    for(let i=0;i<4;i++) document.getElementById('pb'+i).style.width='100%';
+  }
+});
+
+document.getElementById('restartBtn').addEventListener('click', ()=>{
+  current = 0;
+  stage.style.display = 'grid';
+  finalPanel.classList.remove('show');
+  renderStep();
+});
+
+renderStep();
+</script>
+</body>
+</html>
